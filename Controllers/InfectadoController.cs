@@ -1,3 +1,4 @@
+using System;
 using Api.Data.Collection;
 using Api.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ namespace Api.Controllers
 
         public ActionResult SalvarInfectado([FromBody] InfectadoDto dto)
         {
-            var infectado = new Infectado(dto.DataNascimento, dto.Sexo, dto.Latitude, dto.Longitude);
+            var infectado = new Infectado( dto.DataNascimento, dto.DataSintomas, dto.Sexo, dto.Latitude, dto.Longitude);
 
             _infectadosCollection.InsertOne(infectado);
 
@@ -38,15 +39,24 @@ namespace Api.Controllers
             return Ok(infectados);
         } 
 
-        [HttpPost]
+       [HttpPut]
 
-        public ActionResult SalvarInfectado([FromBody] InfectadoDto dto)
+        public ActionResult AtualizarInfectado([FromBody] InfectadoDto dto)
         {
-            var infectado = new Infectado(dto.DataNascimento, dto.Sexo, dto.Latitude, dto.Longitude);
 
-            _infectadosCollection.InsertOne(infectado);
+            _infectadosCollection.UpdateOne(Builders<Infectado>.Filter.Where(_ => _.DataNascimento == dto.DataNascimento), Builders<Infectado>.Update.Set("sexo", dto.Sexo));
 
-            return StatusCode(201, "Infectado adicionado com sucesso");
-        }    
+            return Ok("Atualizado com sucesso");
+        }   
+
+
+        [HttpDelete("{dataNasc}")]
+
+        public ActionResult Delete(DateTime dataNasc)
+        {
+            _infectadosCollection.DeleteOne(Builders<Infectado>.Filter.Where(_ => _.DataNascimento == dataNasc));
+
+            return Ok("Removido com sucesso");
+        }
     }
 }
